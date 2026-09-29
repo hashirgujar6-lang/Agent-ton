@@ -1,7 +1,6 @@
 const mineflayer = require('mineflayer');
 const { GoogleGenAI } = require('@google/genai');
 
-// API key ab Render ke environment variable se uthegi
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const bot = mineflayer.createBot({
@@ -11,37 +10,28 @@ const bot = mineflayer.createBot({
 });
 
 bot.on('spawn', () => {
-  console.log('Agent Ton Kratos SMP mein enter ho gaya hai!');
-  bot.chat('Hello everyone! Main Agent Ton hoon.');
+  console.log('Agent Ton spawn ho gaya hai!');
+  setTimeout(() => {
+    bot.chat('Hello everyone! Main aa gaya hoon.');
+  }, 3000);
 });
 
 bot.on('chat', async (username, message) => {
   if (username === bot.username) return;
   
-  console.log(`${username}: ${message}`);
+  console.log(`Chat aayi ${username} se: ${message}`);
 
   try {
-    const prompt = `Tum Minecraft ke andar ek independent player ho jiska naam 'AgentTon' hai. Tumhein ek Aternos SMP server par ek real player ki tarah rehna hai. Tum har language (Roman Urdu, English, Urdu) samajhte ho aur waise hi chote, mazedaar aur natural andaz mein jawab dete ho. Koi lamba bhashan nahi dena, bas ek normal player ki tarah baat karni hai.
-    
-    Player ${username} ne tumse kaha hai: "${message}"
-    
-    Tumhara chota aur smart jawab kya hoga?`;
-
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: prompt,
+      contents: `Tum Minecraft mein ek player ho. Koi player agar kuch kahe toh uska chota aur mazedaar Roman Urdu mein jawab do. Player ka naam ${username} hai aur usne kaha: "${message}"`
     });
 
-    let reply = response.text.trim();
-    
-    if (reply.length > 100) {
-      reply = reply.substring(0, 100) + '...';
-    }
-
+    const reply = response.text.trim().replace(/\n/g, ' ');
     bot.chat(reply);
 
-  } catch (error) {
-    console.error('AI Error:', error);
-    bot.chat(`Acha ${username}, mujhe samajh nahi aaya.`);
+  } catch (err) {
+    console.error('AI Error Details:', err);
+    bot.chat('Yar meri taraf se net ya AI ka masla ho gaya hai.');
   }
 });
